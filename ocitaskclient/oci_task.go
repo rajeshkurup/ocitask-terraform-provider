@@ -9,20 +9,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
+/**
+ * @brief Container for Task resource in OCI Task System
+ */
 type OciTask struct {
-	Id          *int64  `json:"Id,omitempty"`
-	Title       *string `json:"Title,omitempty"`
-	Description *string `json:"Description,omitempty"`
-	Priority    *int    `json:"Priority,omitempty"`
-	Completed   *bool   `json:"Completed,omitempty"`
-	StartDate   *int64  `json:"StartDate,omitempty"`
-	DueDate     *int64  `json:"DueDate,omitempty"`
-	TimeUpdated *int64  `json:"TimeUpdated,omitempty"`
-	TimeCreated *int64  `json:"TimeCreated,omitempty"`
+	Id          *int64  `json:"id,omitempty"`
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Priority    *int    `json:"priority,omitempty"`
+	Completed   *bool   `json:"completed,omitempty"`
+	StartDate   *int64  `json:"startDate,omitempty"`
+	DueDate     *int64  `json:"dueDate,omitempty"`
+	TimeUpdated *int64  `json:"timeUpdated,omitempty"`
+	TimeCreated *int64  `json:"timeCreated,omitempty"`
 }
 
-func FlattenOciTask(srcTask *OciTask, diags diag.Diagnostics) []interface{} {
+/**
+ * @brief Convert OciTask instance into generic Interface object
+ * @param srcTask Instance of OciTask to be converted
+ * @param diags Instance of diag.Diagnostics array to add error details if any
+ * @return Instnace of Interface array. Would contain one element equivalent to OciTask if succeeded, empty otherwise.
+ * @return Instance of diag.Diagnostics array with error details if failed
+ */
+func FlattenOciTask(srcTask *OciTask) ([]interface{}, diag.Diagnostics) {
 	items := make([]interface{}, 0)
+	var diags diag.Diagnostics
 	if srcTask != nil {
 		destTask := make(map[string]interface{})
 		destTask["id"] = srcTask.Id
@@ -47,14 +58,19 @@ func FlattenOciTask(srcTask *OciTask, diags diag.Diagnostics) []interface{} {
 	} else {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Failed to read task",
-			Detail:   "Empty response from OCI Task Service",
+			Summary:  "Invalid Argument",
+			Detail:   "Invalid OciTask instance passed",
 		})
 	}
 
-	return items
+	return items, diags
 }
 
+/**
+ * @brief Convert OciTask object into JSON String
+ * @return JSON String equivalent to OciTask object if succeeded
+ * @return Instance of error if failed
+ */
 func (ociTask *OciTask) Serialize() (string, error) {
 	result := ""
 	data, err := json.Marshal(ociTask)
@@ -67,6 +83,11 @@ func (ociTask *OciTask) Serialize() (string, error) {
 	return result, err
 }
 
+/**
+ * @brief Convert JSON String into OciTask object
+ * @param data JSON String equivalent to OciTask object
+ * @return Instance of error if failed
+ */
 func (ociTask *OciTask) Deserialize(data []byte) error {
 	err := json.Unmarshal(data, ociTask)
 	if err != nil {

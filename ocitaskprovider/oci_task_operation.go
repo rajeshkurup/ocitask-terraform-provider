@@ -9,10 +9,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+/**
+ * @brief Define OCI Task Service operations that can be performed by Terraform provider
+ */
 type OciTaskOperation struct {
 	// Empty
 }
 
+/**
+ * @brief Constructor for OciTaskOperation
+ * @return Instance of OciTaskOperation
+ */
+func MakeOciTaskOperation() *OciTaskOperation {
+	return &OciTaskOperation{}
+}
+
+/**
+ * @brief Create new Task in OCI Task System
+ * @param ctx Context to Terraform Provider
+ * @param rd Contains Task instance defined in Terraform scripts
+ * @param m Contains OCI Task Service Client pluged into Terraform Provider
+ * @return Collection of diag.Diagnostics instances if failed, otherwise empty
+ */
 func (ociTaskOperation *OciTaskOperation) OciTaskCreate(ctx context.Context, rd *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -27,7 +45,7 @@ func (ociTaskOperation *OciTaskOperation) OciTaskCreate(ctx context.Context, rd 
 				Detail:   err.Error(),
 			})
 		} else {
-			ociClient := m.(*ocitaskclient.OciTaskServClient)
+			ociClient := m.(ocitaskclient.OciTaskServClientInterface)
 			ociResponse, err := ociClient.CreateTask(ociRequest)
 			if err != nil {
 				diags = append(diags, diag.Diagnostic{
@@ -49,11 +67,24 @@ func (ociTaskOperation *OciTaskOperation) OciTaskCreate(ctx context.Context, rd 
 				}
 			}
 		}
+	} else {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Invalid Argument - No tasks found",
+			Detail:   "No Items found in incoming Resource data",
+		})
 	}
 
 	return diags
 }
 
+/**
+ * @brief Update existing Task in OCI Task System
+ * @param ctx Context to Terraform Provider
+ * @param rd Contains Task instance defined in Terraform scripts
+ * @param m Contains OCI Task Service Client pluged into Terraform Provider
+ * @return Collection of diag.Diagnostics instances if failed, otherwise empty
+ */
 func (ociTaskOperation *OciTaskOperation) OciTaskUpdate(ctx context.Context, rd *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -76,7 +107,7 @@ func (ociTaskOperation *OciTaskOperation) OciTaskUpdate(ctx context.Context, rd 
 					Detail:   err.Error(),
 				})
 			} else {
-				ociClient := m.(*ocitaskclient.OciTaskServClient)
+				ociClient := m.(ocitaskclient.OciTaskServClientInterface)
 				ociResponse, err := ociClient.UpdateTask(&taskId, ociRequest)
 				if err != nil {
 					diags = append(diags, diag.Diagnostic{
@@ -98,12 +129,25 @@ func (ociTaskOperation *OciTaskOperation) OciTaskUpdate(ctx context.Context, rd 
 					}
 				}
 			}
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Invalid Argument - No tasks found",
+				Detail:   "No Items found in incoming Resource data",
+			})
 		}
 	}
 
 	return diags
 }
 
+/**
+ * @brief Read Task in OCI Task System
+ * @param ctx Context to Terraform Provider
+ * @param rd Contains Task Identifier defined in Terraform scripts
+ * @param m Contains OCI Task Service Client pluged into Terraform Provider
+ * @return Collection of diag.Diagnostics instances if failed, otherwise empty
+ */
 func (ociTaskOperation *OciTaskOperation) OciTaskRead(ctx context.Context, rd *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -116,7 +160,7 @@ func (ociTaskOperation *OciTaskOperation) OciTaskRead(ctx context.Context, rd *s
 			Detail:   err.Error(),
 		})
 	} else {
-		ociClient := m.(*ocitaskclient.OciTaskServClient)
+		ociClient := m.(ocitaskclient.OciTaskServClientInterface)
 		ociResponse, err := ociClient.GetTask(&taskId)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
@@ -133,13 +177,18 @@ func (ociTaskOperation *OciTaskOperation) OciTaskRead(ctx context.Context, rd *s
 					Detail:   ociErr,
 				})
 			} else {
-				err := rd.Set("items", ocitaskclient.FlattenOciTask(ociResponse.Task, diags))
-				if err != nil {
-					diags = append(diags, diag.Diagnostic{
-						Severity: diag.Error,
-						Summary:  "Failed to set task into resource data",
-						Detail:   err.Error(),
-					})
+				ociTasks, flatDiag := ocitaskclient.FlattenOciTask(ociResponse.Task)
+				if len(flatDiag) == 0 {
+					err := rd.Set("items", ociTasks)
+					if err != nil {
+						diags = append(diags, diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "Failed to set task into resource data",
+							Detail:   err.Error(),
+						})
+					}
+				} else {
+					diags = append(diags, flatDiag...)
 				}
 			}
 		}
@@ -148,6 +197,13 @@ func (ociTaskOperation *OciTaskOperation) OciTaskRead(ctx context.Context, rd *s
 	return diags
 }
 
+/**
+ * @brief Delete Task in OCI Task System
+ * @param ctx Context to Terraform Provider
+ * @param rd Contains Task Identifier defined in Terraform scripts
+ * @param m Contains OCI Task Service Client pluged into Terraform Provider
+ * @return Collection of diag.Diagnostics instances if failed, otherwise empty
+ */
 func (ociTaskOperation *OciTaskOperation) OciTaskDelete(ctx context.Context, rd *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -160,7 +216,7 @@ func (ociTaskOperation *OciTaskOperation) OciTaskDelete(ctx context.Context, rd 
 			Detail:   err.Error(),
 		})
 	} else {
-		ociClient := m.(*ocitaskclient.OciTaskServClient)
+		ociClient := m.(ocitaskclient.OciTaskServClientInterface)
 		ociResponse, err := ociClient.DeleteTask(&taskId)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{

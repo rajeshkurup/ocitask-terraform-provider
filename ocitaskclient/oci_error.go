@@ -6,11 +6,19 @@ import (
 	"log"
 )
 
+/**
+ * @brief Container for error details
+ */
 type OciError struct {
 	ErrorCode    *int    `json:"errorCode,omitempty"`
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 }
 
+/**
+ * @brief Convert OciError object into JSON String
+ * @return JSON String equivalent to OciError object if succeeded
+ * @return Instance of error if failed
+ */
 func (ociError *OciError) Serialize() (string, error) {
 	result := ""
 	data, err := json.Marshal(ociError)
@@ -23,6 +31,11 @@ func (ociError *OciError) Serialize() (string, error) {
 	return result, err
 }
 
+/**
+ * @brief Convert JSON String into OciError object
+ * @param data JSON String equivalent to OciError object
+ * @return Instance of error if failed
+ */
 func (ociError *OciError) Deserialize(data []byte) error {
 	err := json.Unmarshal(data, ociError)
 	if err != nil {

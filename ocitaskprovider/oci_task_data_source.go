@@ -2,16 +2,27 @@ package ocitaskprovider
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+/**
+ * @brief Define schema of Task resource in OCI Task System
+ */
 type OciTaskDataSource struct {
 	ociTaskOperation *OciTaskOperation
 }
 
+/**
+ * @brief Constructor for OciTaskDataSource
+ * @return Instance of OciTaskDataSource
+ */
 func MakeOciTaskDataSource() *OciTaskDataSource {
 	return &OciTaskDataSource{
-		ociTaskOperation: &OciTaskOperation{},
+		ociTaskOperation: MakeOciTaskOperation(),
 	}
 }
 
+/**
+ * @brief Build schema for Task resource in OCI Task System
+ * @return Instance of schema.Resource contains schema for Task resource in OCI Task System
+ */
 func (ociTaskDataSource *OciTaskDataSource) DataSourceOciTasks() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: ociTaskDataSource.ociTaskOperation.OciTaskRead,

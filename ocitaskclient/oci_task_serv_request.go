@@ -2,10 +2,14 @@ package ocitaskclient
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 )
 
+/**
+ * @brief Request container for OCI Task Service
+ */
 type OciTaskServRequest struct {
 	Title       *string `json:"title,omitempty"`
 	Description *string `json:"description,omitempty"`
@@ -15,23 +19,23 @@ type OciTaskServRequest struct {
 	DueDate     *string `json:"dueDate,omitempty"`
 }
 
+/**
+ * @brief Constructor for OciTaskServRequest
+ * @param srcOciTask Instance of OciTask
+ * @return Instnace of OciTaskServRequest if succeeded
+ * @return Instance of error if failed
+ */
 func MakeOciTaskServRequest(srcOciTask *interface{}) (*OciTaskServRequest, error) {
-	data, err := json.Marshal(srcOciTask)
-	if err != nil {
-		log.Println(fmt.Sprintf("Invalid Argment: Failed to serialize OCI Task - error=%s", err))
-		return nil, err
+	if srcOciTask == nil {
+		errMsg := "Invalid Argment: Invalid OCI Task passed"
+		log.Println(errMsg)
+		return nil, errors.New(errMsg)
 	}
 
-	ociTask := make(map[string]interface{})
-	err = json.Unmarshal(data, &ociTask)
-	if err != nil {
-		log.Println(fmt.Sprintf("Invalid Argment: Failed to deserialize OCI Task - error=%s", err))
-		return nil, err
-	}
-
+	ociTask := (*srcOciTask).(map[string]interface{})
 	title := ociTask["title"].(string)
 	description := ociTask["description"].(string)
-	priority := int(ociTask["priority"].(float64))
+	priority := ociTask["priority"].(int)
 	completed := ociTask["completed"].(bool)
 	startDate := ociTask["start_date"].(string)
 	dueDate := ociTask["due_date"].(string)
@@ -46,6 +50,11 @@ func MakeOciTaskServRequest(srcOciTask *interface{}) (*OciTaskServRequest, error
 	}, nil
 }
 
+/**
+ * @brief Convert OciTaskServRequest object into JSON String
+ * @return JSON String equivalent to OciTaskServRequest object if succeeded
+ * @return Instance of error if failed
+ */
 func (ociTaskServRequest *OciTaskServRequest) Serialize() (string, error) {
 	result := ""
 	data, err := json.Marshal(ociTaskServRequest)
@@ -58,6 +67,11 @@ func (ociTaskServRequest *OciTaskServRequest) Serialize() (string, error) {
 	return result, err
 }
 
+/**
+ * @brief Convert JSON String into OciTaskServRequest object
+ * @param data JSON String equivalent to OciTaskServRequest object
+ * @return Instance of error if failed
+ */
 func (ociTaskServRequest *OciTaskServRequest) Deserialize(data []byte) error {
 	err := json.Unmarshal(data, ociTaskServRequest)
 	if err != nil {
