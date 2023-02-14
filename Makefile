@@ -9,3 +9,7 @@ test:
 clean:
 	go clean -modcache
 	rm -rf ~/.terraform.d/plugins/terraform.local/ocitaskserv/ocitask
+
+docs:
+	go get -d github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+	go generate ./...

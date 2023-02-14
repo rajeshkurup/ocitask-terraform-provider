@@ -8,6 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
 
+// Generate the Terraform provider documentation using `tfplugindocs`:
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 /**
  * @brief Entry point for OCI Task Service Terraform Provider
  */
